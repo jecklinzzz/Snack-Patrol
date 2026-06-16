@@ -1,0 +1,15 @@
+[theme]
+# Warna latar belakang utama (menggunakan warna Mint pastel khas laboratorium modern)
+backgroundColor = "#F2F9F6"
+
+# Warna latar belakang area samping/kartu informasi (soft cream/light yellow seperti keju/snack)
+secondaryBackgroundColor = "#FFFDF0"
+
+# Warna teks utama (warna charcoal gelap agak kebiruan agar kontras dan mudah dibaca)
+textColor = "#2D3748"
+
+# Warna aksen utama untuk tombol, garis, dan highlight (Warna Pink Neon/Stroberi Laboratorium yang mencolok dan lucu)
+primaryColor = "#FF6B8B"
+
+# Font yang digunakan
+font = "sans serif"
