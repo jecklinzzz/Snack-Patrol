@@ -11,6 +11,18 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    /* CSS untuk Mengetengahkan dan Memperbesar Tab Navigasi */
+    .stTabs [data-baseweb="tab-list"] {
+        display: flex;
+        justify-content: center; /* Membuat menu ke tengah */
+        gap: 50px; /* Memberi jarak antar tombol menu */
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        height: 60px; /* Membuat area tombol lebih tinggi */
+        font-size: 22px !important; /* Memperbesar ukuran tulisan menu */
+        font-weight: 700 !important; /* Membuat tulisan menjadi tebal */
+    }
     /* Mengatur Font Utama */
     html, body, [class*="css"]  {
         font-family: 'Inter', sans-serif;
