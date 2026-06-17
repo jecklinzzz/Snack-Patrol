@@ -277,7 +277,7 @@ try:
     # BAGIAN 2: ANALISIS KOMPARATIF PRODUK
     # ==========================================
     with menu_bandingkan:
-        st.markdown("## 📊 Perbandingan Nutrisi Antar Sampel", unsafe_allow_html=True)
+        st.markdown("## 📊 Perbandingan Vektor Nutrisi Antar Sampel", unsafe_allow_html=True)
         st.write("---")
         
         daftar_snack = df["Nama Produk"].tolist()
@@ -385,7 +385,7 @@ try:
                     st.error("⚠️ Proses gagal. Mohon lengkapi nama produk dan lampirkan kedua foto kemasan sebelum mengirimkan data.")
 
     # ==========================================
-    # BAGIAN 4: KALKULATOR BERAT BADAN
+    # BAGIAN 4: KALKULATOR BERAT BADAN & CHATBOT AI
     # ==========================================
     with menu_berat:
         st.markdown("## ⚖️ Kalkulator Berat Badan Ideal (Metode Broca)", unsafe_allow_html=True)
@@ -417,6 +417,55 @@ try:
             st.warning(f"🟡 Status: Kelebihan {selisih:.2f} kg. Batasi sampel berkadar gula tinggi.")
         else:
             st.info(f"🔵 Status: Kekurangan {abs(selisih):.2f} kg. Tingkatkan kalori sehat.")
+
+        # --- MODUL CHATBOT AI RULE-BASED ---
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("### 🤖 Konsultasi AI Ahli Gizi (Beta)")
+        st.info("Ketik kata kunci **'naik'** atau **'turun'** untuk mendapatkan protokol kalori dari asisten AI kami.")
+
+        # Inisialisasi memori chat pada Session State agar chat tidak hilang saat direfresh
+        if "memori_chat" not in st.session_state:
+            st.session_state.memori_chat = []
+
+        # Menampilkan riwayat chat yang tersimpan di memori
+        for chat in st.session_state.memori_chat:
+            with st.chat_message(chat["role"]):
+                st.markdown(chat["content"])
+
+        # Kolom input chat untuk pengguna
+        input_user = st.chat_input("Tanyakan tips seputar berat badan (contoh: cara turun bb)...")
+
+        if input_user:
+            # 1. Simpan dan tampilkan pesan pengguna
+            st.session_state.memori_chat.append({"role": "user", "content": input_user})
+            with st.chat_message("user"):
+                st.markdown(input_user)
+
+            # 2. Logika pemrosesan teks untuk memberikan balasan (Rule-Based)
+            teks_lower = input_user.lower()
+            if "turun" in teks_lower or "kurus" in teks_lower or "diet" in teks_lower:
+                balasan = """Untuk menurunkan berat badan secara sehat dan presisi, kunci utamanya adalah **Defisit Kalori** (kalori yang masuk lebih sedikit dibandingkan energi yang dibakar). Berikut adalah protokol yang direkomendasikan:
+                
+* 📉 **Kurangi Gula & Natrium:** Batasi camilan kemasan yang berstatus 'WASPADA' atau 'GAWAT' di *database Snack Patrol*. Gula berlebih memicu penumpukan lemak, dan natrium menahan air di tubuh.
+* 🥦 **Tingkatkan Serat & Protein:** Fokus pada karbohidrat kompleks, sayuran, dan protein tanpa lemak (telur, dada ayam, tempe). Ini akan menjaga rasa kenyang lebih lama.
+* 💧 **Hidrasi Optimal:** Konsumsi air putih minimal 2-2.5 liter per hari untuk melancarkan metabolisme.
+* 🏃‍♂️ **Aktivitas Fisik:** Lakukan latihan kardio ringan dikombinasikan dengan latihan beban minimal 30 menit sehari."""
+            
+            elif "naik" in teks_lower or "gemuk" in teks_lower or "tambah" in teks_lower:
+                balasan = """Untuk menaikkan berat badan, Anda memerlukan **Surplus Kalori** yang sehat. Fokusnya adalah meningkatkan massa otot, bukan sekadar menimbun lemak. Berikut adalah panduannya:
+
+* 🥑 **Pilih Kalori Padat Nutrisi:** Daripada mengonsumsi makanan tinggi gula buatan, pilihlah kalori berkualitas seperti alpukat, kacang-kacangan, susu *full cream*, telur, dan daging segar.
+* 🍽️ **Frekuensi Makan:** Jika kesulitan menghabiskan porsi besar, ubah pola makan menjadi porsi sedang namun lebih sering (5-6 kali sehari).
+* 💪 **Fokus pada Protein:** Asupan protein sangat krusial untuk membangun jaringan otot yang baru.
+* 🏋️‍♂️ **Latihan Beban (Hipertrofi):** Berbeda dengan kardio, angkat beban akan memberikan sinyal pada tubuh agar kalori ekstra yang masuk disintesis menjadi otot, bukan lemak."""
+            
+            else:
+                balasan = "🤖 Maaf, saat ini modul AI Snack Patrol hanya diprogram untuk memberikan rekomendasi seputar **menaikkan** atau **menurunkan** berat badan. Silakan ketik kata kunci 'naik' atau 'turun'."
+
+            # 3. Simpan dan tampilkan balasan sistem AI
+            st.session_state.memori_chat.append({"role": "assistant", "content": balasan})
+            with st.chat_message("assistant"):
+                st.markdown(balasan)
 
 # Penanganan error (*Exception Handling*)
 except FileNotFoundError:
