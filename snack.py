@@ -3,41 +3,33 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
-# 1. Konfigurasi Awal Halaman (Layout Wide)
+# Konfigurasi layout utama halaman web
 st.set_page_config(
     page_title="Snack Patrol - Food Lab Analysis", page_icon="🧪", layout="wide"
 )
 
-# 2. Custom CSS Premium untuk Membuat Grid Cards, Tombol, dan Font Menarik
+# Kumpulan Custom CSS untuk styling UI (Navigasi, Kartu Produk, dan Tipografi)
 st.markdown(
     """
     <style>
-    /* CSS FINAL: Memaksa Tab Navigasi Horizontal Berada Tepat di Tengah */
-    .stTabs {
+    /* Konfigurasi untuk menengahkan navigasi Tab horizontal */
+    div[data-baseweb="tab-list"] {
         display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important; /* Menarik container utama ke tengah */
+        justify-content: center !important; 
         width: 100% !important;
+        gap: 20px !important; 
     }
 
-    .stTabs [data-baseweb="tab-list"] {
-        display: flex !important;
-        justify-content: center !important; /* Memusatkan deretan tombol menu */
-        width: auto !important;
-        gap: 30px !important; /* Jarak aman antar menu */
-    }
-
-    .stTabs [data-baseweb="tab"] {
-        font-size: 24px !important; /* Memperbesar ukuran tulisan menu */
-        font-weight: 700 !important; /* Membuat teks tebal */
-        height: 60px !important; /* Membuat tombol menu lebih proporsional */
-        padding-left: 20px !important;
-        padding-right: 20px !important;
+    button[data-baseweb="tab"] {
+        font-size: 22px !important; 
+        font-weight: 700 !important; 
+        height: 55px !important; 
+        padding: 10px 25px !important;
     }
     
-    /* Desain Kartu Produk (Grid Card) */
+    /* Konfigurasi UI untuk kartu tampilan produk (Grid) */
     .product-card {
-        background-color: #FFFDF0; /* Soft Cream */
+        background-color: #FFFDF0; 
         padding: 20px;
         border-radius: 15px;
         border: 1px solid #E2E8F0;
@@ -45,12 +37,13 @@ st.markdown(
         margin-bottom: 20px;
         transition: transform 0.2s;
     }
+    
     .product-card:hover {
         transform: translateY(-5px);
-        border-color: #FF6B8B; /* Pink Aksen saat Hover */
+        border-color: #FF6B8B; 
     }
     
-    /* Indikator Status/Badge */
+    /* Konfigurasi palet warna untuk indikator peringatan nutrisi */
     .badge-gawat {
         background-color: #FED7D7;
         color: #9B2C2C;
@@ -60,6 +53,7 @@ st.markdown(
         font-weight: bold;
         display: inline-block;
     }
+    
     .badge-waspada {
         background-color: #FEEBC8;
         color: #9C4221;
@@ -69,6 +63,7 @@ st.markdown(
         font-weight: bold;
         display: inline-block;
     }
+    
     .badge-aman {
         background-color: #C6F6D5;
         color: #22543D;
@@ -79,7 +74,7 @@ st.markdown(
         display: inline-block;
     }
     
-    /* Judul Besar Snack Patrol */
+    /* Konfigurasi styling untuk judul halaman */
     .main-title {
         text-align: center;
         font-size: 50px !important;
@@ -87,6 +82,7 @@ st.markdown(
         color: #FF6B8B;
         margin-bottom: 5px;
     }
+    
     .sub-title {
         text-align: center;
         font-size: 20px !important;
@@ -98,8 +94,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
-# 3. Fungsi Memuat Data CSV (Menggunakan Sistem Kamu)
+# Fungsi untuk memuat dataset dari file CSV
 @st.cache_data
 def load_data():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -108,42 +103,39 @@ def load_data():
     data.columns = data.columns.str.strip()
     return data
 
-
+# Blok Try-Except untuk menangani error pembacaan file
 try:
     df = load_data()
 
-    # --- MENU NAVIGASI ATAS (Sesuai Foto Referensi Kamu) ---
-    # Menggunakan st.tabs untuk membuat navigasi horizontal di bagian atas halaman
+    # Inisialisasi navigasi Tab
     menu_beranda, menu_berat, menu_bandingkan = st.tabs(
         ["🏠 Beranda", "⚖️ Berat Ideal", "📊 Bandingkan Produk"]
     )
 
-    # ==============================================================================
-    # TAB 1: BERANDA (Tampilan Utama Mirip Foto Referensi)
-    # ==============================================================================
+    # ==========================================
+    # BAGIAN 1: BERANDA & PENCARIAN PRODUK
+    # ==========================================
     with menu_beranda:
-        # Tampilan Judul Besar di Tengah
-        st.markdown(
-            "<div class='main-title'>Snack Patrol</div>", unsafe_allow_html=True
-        )
+        st.markdown("<div class='main-title'>Snack Patrol</div>", unsafe_allow_html=True)
         st.markdown(
             "<div class='sub-title'>Periksa kandungan nutrisi snack & minumanmu secara presisi</div>",
             unsafe_allow_html=True,
         )
 
-        # Search Bar Besar di Tengah
+        # Fitur kolom pencarian produk
         search_query = st.text_input(
             "",
             placeholder="🔍 Cari snack atau minuman... (cth: Teh Pucuk, Oreo, Chitato)",
             key="search_home",
         )
 
-        # Tombol Rekomendasi Cepat (Pills) di bawah search bar
+        # Tombol pintasan untuk sampel populer
         st.write("")
         st.markdown(
             "<p style='text-align: center; color: #718096; font-size: 15px;'>Coba klik sampel ini:</p>",
             unsafe_allow_html=True,
         )
+        
         pills_kolom = st.columns([2, 1, 1, 1, 1, 1, 2])
         sampel_pills = ["Teh Pucuk", "Oreo", "Chitato"]
 
@@ -159,21 +151,14 @@ try:
 
         st.markdown("---")
 
-        # LOGIKA PENCARIAN & GRID CARDS
+        # Logika pemrosesan hasil pencarian
         if search_query:
-            # Jika user sedang mencari produk tertentu
-            hasil_filter = df[
-                df["Nama Produk"].str.contains(
-                    search_query, case=False, na=False
-                )
-            ]
+            hasil_filter = df[df["Nama Produk"].str.contains(search_query, case=False, na=False)]
 
             if not hasil_filter.empty:
-                st.markdown(
-                    f"#### 🔍 Hasil Analisis untuk '{search_query}':"
-                )
+                st.markdown(f"#### 🔍 Hasil Analisis untuk '{search_query}':")
 
-                # Jika hanya 1 produk yang diklik/dicari, munculkan Detail Lab aslimu
+                # Tampilan detail jika hanya 1 produk yang ditemukan
                 if len(hasil_filter) == 1:
                     data_snack = hasil_filter.iloc[0]
 
@@ -188,75 +173,49 @@ try:
                     )
 
                     col_gula, col_natrium = st.columns(2)
+                    
+                    # Kolom evaluasi metrik Gula
                     with col_gula:
                         st.markdown("### 🍬 **Uji Kandungan Gula**")
-                        st.metric(
-                            label="Massa Gula Terlarut",
-                            value=f"{data_snack['Kandungan Gula (g)']} g",
-                        )
-                        st.caption(
-                            f"🧪 Konsentrasi: **{data_snack['Sugar /100 g']}** per 100g"
-                        )
-                        st.caption(
-                            f"📈 Harian: **{data_snack['Persen Gula Harian']}%** dari batas 50g"
-                        )
+                        st.metric(label="Massa Gula Terlarut", value=f"{data_snack['Kandungan Gula (g)']} g")
+                        st.caption(f"🧪 Konsentrasi: **{data_snack['Sugar /100 g']}** per 100g")
+                        st.caption(f"📈 Harian: **{data_snack['Persen Gula Harian']}%** dari batas 50g")
 
                         if data_snack["Sugar Level"] == "GAWAT":
                             st.error(f"🔴 **STATUS: {data_snack['Sugar Level']}**")
                         elif data_snack["Sugar Level"] == "WASPADA":
-                            st.warning(
-                                f"🟡 **STATUS: {data_snack['Sugar Level']}**"
-                            )
+                            st.warning(f"🟡 **STATUS: {data_snack['Sugar Level']}**")
                         else:
-                            st.success(
-                                f"🟢 **STATUS: {data_snack['Sugar Level']}**"
-                            )
+                            st.success(f"🟢 **STATUS: {data_snack['Sugar Level']}**")
 
+                    # Kolom evaluasi metrik Natrium
                     with col_natrium:
                         st.markdown("### 🧂 **Uji Kandungan Natrium**")
-                        st.metric(
-                            label="Massa Natrium Terlarut",
-                            value=f"{data_snack['Kandungan Natrium (mg)']} mg",
-                        )
-                        st.caption(
-                            f"🧪 Konsentrasi: **{data_snack['Natrium /100 g']}** per 100g"
-                        )
-                        st.caption(
-                            f"📈 Harian: **{data_snack['Persen Natrium Harian']}%** dari batas 2000mg"
-                        )
+                        st.metric(label="Massa Natrium Terlarut", value=f"{data_snack['Kandungan Natrium (mg)']} mg")
+                        st.caption(f"🧪 Konsentrasi: **{data_snack['Natrium /100 g']}** per 100g")
+                        st.caption(f"📈 Harian: **{data_snack['Persen Natrium Harian']}%** dari batas 2000mg")
 
                         if data_snack["Natrium Level"] == "GAWAT":
-                            st.error(
-                                f"🔴 **STATUS: {data_snack['Natrium Level']}**"
-                            )
+                            st.error(f"🔴 **STATUS: {data_snack['Natrium Level']}**")
                         elif data_snack["Natrium Level"] == "WASPADA":
-                            st.warning(
-                                f"🟡 **STATUS: {data_snack['Natrium Level']}**"
-                            )
+                            st.warning(f"🟡 **STATUS: {data_snack['Natrium Level']}**")
                         else:
-                            st.success(
-                                f"🟢 **STATUS: {data_snack['Natrium Level']}**"
-                            )
+                            st.success(f"🟢 **STATUS: {data_snack['Natrium Level']}**")
 
                     st.markdown("---")
                     st.markdown("### 🧬 **Laporan Komposisi & Toksikologi**")
                     st.info(f"🔮 **Senyawa Utama:** {data_snack['Senyawa Utama']}")
-                    st.error(
-                        f"⚠️ **Bahaya Berlebih:** {data_snack['Bahaya Berlebih']}"
-                    )
+                    st.error(f"⚠️ **Bahaya Berlebih:** {data_snack['Bahaya Berlebih']}")
+                
+                # Tampilan Grid Card jika pencarian menghasilkan lebih dari 1 produk
                 else:
-                    # Tampilkan dalam bentuk Grid jika hasil pencarian banyak
                     cols = st.columns(3)
                     for idx, row in enumerate(hasil_filter.itertuples()):
                         with cols[idx % 3]:
                             badge_class = "badge-aman"
-                            if (
-                                row._5 == "GAWAT" or row._8 == "GAWAT"
-                            ):  # Cek status level gula/natrium
+                            if row._5 == "GAWAT" or row._8 == "GAWAT":
                                 badge_class = "badge-gawat"
-                            elif (
-                                row._5 == "WASPADA" or row._8 == "WASPADA"
-                            ):
+                            elif row._5 == "WASPADA" or row._8 == "WASPADA":
                                 badge_class = "badge-waspada"
 
                             st.markdown(
@@ -274,30 +233,22 @@ try:
             else:
                 st.warning("Produk tidak terdeteksi di database lab kami.")
 
+        # Tampilan default (menampilkan seluruh database) jika tidak ada pencarian
         else:
-            # TAMPILAN DEFAULT: MENAMPILKAN SEMUA PRODUK (GRID 3 KOLOM SEPERTI FOTO REFERENSI)
             st.markdown("### 📦 Semua Produk Tersedia")
             grid_kolom = st.columns(3)
 
             for indeks, baris in df.iterrows():
-                # Tentukan warna badge gabungan berdasarkan tingkat keparahan zat gizi
-                if (
-                    baris["Sugar Level"] == "GAWAT"
-                    or baris["Natrium Level"] == "GAWAT"
-                ):
+                if baris["Sugar Level"] == "GAWAT" or baris["Natrium Level"] == "GAWAT":
                     css_badge = "badge-gawat"
                     status_teks = "GAWAT"
-                elif (
-                    baris["Sugar Level"] == "WASPADA"
-                    or baris["Natrium Level"] == "WASPADA"
-                ):
+                elif baris["Sugar Level"] == "WASPADA" or baris["Natrium Level"] == "WASPADA":
                     css_badge = "badge-waspada"
                     status_teks = "WASPADA"
                 else:
                     css_badge = "badge-aman"
                     status_teks = "AMAN"
 
-                # Masukkan ke kolom grid (0, 1, atau 2) secara bergantian
                 with grid_kolom[indeks % 3]:
                     st.markdown(
                         f"""
@@ -312,31 +263,29 @@ try:
                         unsafe_allow_html=True,
                     )
 
-    # ==============================================================================
-    # TAB 2: BERAT IDEAL
-    # ==============================================================================
+    # ==========================================
+    # BAGIAN 2: KALKULATOR BERAT BADAN
+    # ==========================================
     with menu_berat:
-        st.markdown(
-            "## ⚖️ Kalkulator Berat Badan Ideal (Metode Broca)",
-            unsafe_allow_html=True,
-        )
+        st.markdown("## ⚖️ Kalkulator Berat Badan Ideal (Metode Broca)", unsafe_allow_html=True)
         st.write("---")
         c1, c2 = st.columns(2)
+        
+        # Pengumpulan data antropometri praktikan
         with c1:
-            gender = st.radio("Jenis Kelamin Praktikan:", ["Pria", "Wanita"])
-            tinggi = st.number_input(
-                "Tinggi Badan (cm):", min_value=100, max_value=250, value=165, key="tb"
-            )
+            gender = st.radio("Jenis Kelamin:", ["Pria", "Wanita"])
+            tinggi = st.number_input("Tinggi Badan (cm):", min_value=100, max_value=250, value=165, key="tb")
+            
         with c2:
-            berat_sekarang = st.number_input(
-                "Berat Badan Saat Ini (kg):", min_value=30, max_value=200, value=60, key="bb"
-            )
+            berat_sekarang = st.number_input("Berat Badan Saat Ini (kg):", min_value=30, max_value=200, value=60, key="bb")
 
+        # Logika perhitungan Metode Broca
         if gender == "Pria":
             berat_ideal = (tinggi - 100) - ((tinggi - 100) * 0.10)
         else:
             berat_ideal = (tinggi - 100) - ((tinggi - 100) * 0.15)
 
+        # Output evaluasi klinis
         st.markdown("### 📊 Hasil Analisis Klinis")
         st.metric(label="Berat Badan Ideal Target", value=f"{berat_ideal:.2f} kg")
         selisih = berat_sekarang - berat_ideal
@@ -348,15 +297,17 @@ try:
         else:
             st.info(f"🔵 Status: Kekurangan {abs(selisih):.2f} kg. Tingkatkan kalori sehat.")
 
-    # ==============================================================================
-    # TAB 3: BANDINGKAN PRODUK
-    # ==============================================================================
+    # ==========================================
+    # BAGIAN 3: ANALISIS KOMPARATIF PRODUK
+    # ==========================================
     with menu_bandingkan:
         st.markdown("## 📊 Perbandingan Vektor Nutrisi Antar Sampel", unsafe_allow_html=True)
         st.write("---")
-        daftar_snack = df["Nama Produk"].tolist()
         
+        daftar_snack = df["Nama Produk"].tolist()
         cx, cy = st.columns(2)
+        
+        # Input pemilihan sampel untuk dikomparasi
         with cx:
             p1 = st.selectbox("Pilih Sampel A:", daftar_snack, index=0)
         with cy:
@@ -369,7 +320,7 @@ try:
 
             st.markdown("### ⚔️ **Matriks Perbandingan Nutrisi**")
 
-            # 1. Menata data untuk grafik Plotly
+            # Ekstraksi dataset untuk kebutuhan visualisasi Plotly
             df_grafik = pd.DataFrame({
                 "Produk": [p1, p1, p2, p2],
                 "Zat Gizi": ["Gula (g)", "Natrium (mg)", "Gula (g)", "Natrium (mg)"],
@@ -381,22 +332,21 @@ try:
                 ]
             })
 
-            # 2. Membuat Grafik Batang Interaktif
+            # Render grafik batang berkelompok
             fig = px.bar(df_grafik, x="Zat Gizi", y="Nilai Kandungan", color="Produk", barmode="group",
                          text_auto=True, color_discrete_sequence=["#FF6B8B", "#4FD1C5"])
 
-            # 3. Pengaturan layout grafik aman agar penuh & legenda rapi
+            # Penyesuaian layout grafik agar presisi
             fig.update_layout(
                 plot_bgcolor="rgba(0,0,0,0)",
                 paper_bgcolor="rgba(0,0,0,0)",
                 margin=dict(l=40, r=40, t=50, b=40),
-                legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="center", x=0.5) # Legenda pas di tengah atas
+                legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="center", x=0.5) 
             )
 
-            # 4. Tampilkan grafik LEBAR PENUH & SEMBUNYIKAN TOOLBAR ABU-ABU yang menghalangi
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
-            # 5. Teks Evaluasi Laboratorium
+            # Analisis selisih numerik kandungan gizi
             st.markdown("### 📉 **Hasil Evaluasi Selisih Kandungan**")
             sg = float(data_p1["Kandungan Gula (g)"]) - float(data_p2["Kandungan Gula (g)"])
             sn = float(data_p1["Kandungan Natrium (mg)"]) - float(data_p2["Kandungan Natrium (mg)"])
@@ -406,11 +356,17 @@ try:
             elif sg < 0:
                 st.write(f"• Kandungan gula **{p1}** lebih rendah sebesar **{abs(sg):.1f} g** dibandingkan dengan {p2}.")
             else:
-                st.write(f"• Kadar kandungan gula antara **{p1}** and **{p2}** adalah setara.")
+                st.write(f"• Kadar kandungan gula antara **{p1}** dan **{p2}** adalah setara.")
 
             if sn > 0:
                 st.write(f"• Kandungan natrium **{p1}** lebih tinggi sebesar **{abs(sn):.1f} mg** dibandingkan dengan {p2}.")
             elif sn < 0:
                 st.write(f"• Kandungan natrium **{p1}** lebih rendah sebesar **{abs(sn):.1f} mg** dibandingkan dengan {p2}.")
             else:
-                st.write(f"• Kadar kandungan natrium antara **{p1}** and **{p2}** adalah setara.")
+                st.write(f"• Kadar kandungan natrium antara **{p1}** dan **{p2}** adalah setara.")
+
+# Penanganan error (*Exception Handling*)
+except FileNotFoundError:
+    st.error("File 'Database Snack.csv' tidak ditemukan.")
+except Exception as e:
+    st.error(f"Terjadi kesalahan saat memuat data: {e}")
