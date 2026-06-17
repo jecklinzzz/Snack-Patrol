@@ -277,7 +277,7 @@ try:
     # BAGIAN 2: ANALISIS KOMPARATIF PRODUK
     # ==========================================
     with menu_bandingkan:
-        st.markdown("## 📊 Perbandingan Vektor Nutrisi Antar Sampel", unsafe_allow_html=True)
+        st.markdown("## 📊 Perbandingan Nutrisi Antar Sampel", unsafe_allow_html=True)
         st.write("---")
         
         daftar_snack = df["Nama Produk"].tolist()
