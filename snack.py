@@ -12,19 +12,25 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    /* Memangkas ruang kosong berlebih di bagian paling atas halaman */
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+
     /* Konfigurasi untuk menengahkan navigasi Tab horizontal */
     div[data-baseweb="tab-list"] {
         display: flex !important;
         justify-content: center !important; 
         width: 100% !important;
-        gap: 20px !important; 
+        gap: 15px !important; 
     }
 
     button[data-baseweb="tab"] {
-        font-size: 22px !important; 
+        font-size: 20px !important; 
         font-weight: 700 !important; 
         height: 55px !important; 
-        padding: 10px 25px !important;
+        padding: 10px 20px !important;
     }
     
     /* Konfigurasi UI untuk kartu tampilan produk (Grid) */
@@ -107,21 +113,24 @@ def load_data():
 try:
     df = load_data()
 
-    # Inisialisasi navigasi Tab
-    menu_beranda, menu_berat, menu_bandingkan = st.tabs(
-        ["🏠 Beranda", "⚖️ Berat Ideal", "📊 Bandingkan Produk"]
+    # ==========================================
+    # HEADER UTAMA (MUNCUL DI SEMUA TAB)
+    # ==========================================
+    st.markdown("<div class='main-title'>Snack Patrol</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='sub-title'>Periksa kandungan nutrisi snack & minumanmu secara presisi</div>",
+        unsafe_allow_html=True,
+    )
+
+    # Inisialisasi navigasi Tab dengan urutan baru yang telah disesuaikan
+    menu_beranda, menu_bandingkan, menu_kontribusi, menu_berat = st.tabs(
+        ["🏠 Beranda", "📊 Bandingkan Produk", "➕ Kontribusi Data", "⚖️ Berat Ideal"]
     )
 
     # ==========================================
     # BAGIAN 1: BERANDA & PENCARIAN PRODUK
     # ==========================================
     with menu_beranda:
-        st.markdown("<div class='main-title'>Snack Patrol</div>", unsafe_allow_html=True)
-        st.markdown(
-            "<div class='sub-title'>Periksa kandungan nutrisi snack & minumanmu secara presisi</div>",
-            unsafe_allow_html=True,
-        )
-
         # Fitur kolom pencarian produk
         search_query = st.text_input(
             "",
@@ -233,12 +242,13 @@ try:
             else:
                 st.warning("Produk tidak terdeteksi di database lab kami.")
 
-        # Tampilan default (menampilkan seluruh database) jika tidak ada pencarian
+        # Tampilan default (menampilkan 6 sampel saja) jika tidak ada pencarian
         else:
-            st.markdown("### 📦 Semua Produk Tersedia")
+            st.markdown("### 📦 Sampel Produk Tersedia")
             grid_kolom = st.columns(3)
 
-            for indeks, baris in df.iterrows():
+            # Membatasi iterasi hanya pada 6 baris pertama menggunakan .head(6)
+            for indeks, baris in df.head(6).iterrows():
                 if baris["Sugar Level"] == "GAWAT" or baris["Natrium Level"] == "GAWAT":
                     css_badge = "badge-gawat"
                     status_teks = "GAWAT"
@@ -264,41 +274,7 @@ try:
                     )
 
     # ==========================================
-    # BAGIAN 2: KALKULATOR BERAT BADAN
-    # ==========================================
-    with menu_berat:
-        st.markdown("## ⚖️ Kalkulator Berat Badan Ideal (Metode Broca)", unsafe_allow_html=True)
-        st.write("---")
-        c1, c2 = st.columns(2)
-        
-        # Pengumpulan data antropometri praktikan
-        with c1:
-            gender = st.radio("Jenis Kelamin:", ["Pria", "Wanita"])
-            tinggi = st.number_input("Tinggi Badan (cm):", min_value=100, max_value=250, value=165, key="tb")
-            
-        with c2:
-            berat_sekarang = st.number_input("Berat Badan Saat Ini (kg):", min_value=30, max_value=200, value=60, key="bb")
-
-        # Logika perhitungan Metode Broca
-        if gender == "Pria":
-            berat_ideal = (tinggi - 100) - ((tinggi - 100) * 0.10)
-        else:
-            berat_ideal = (tinggi - 100) - ((tinggi - 100) * 0.15)
-
-        # Output evaluasi klinis
-        st.markdown("### 📊 Hasil Analisis Klinis")
-        st.metric(label="Berat Badan Ideal Target", value=f"{berat_ideal:.2f} kg")
-        selisih = berat_sekarang - berat_ideal
-
-        if abs(selisih) <= 2:
-            st.success("🟢 Status: Berat badan Anda ideal! Pertahankan pola konsumsi.")
-        elif selisih > 2:
-            st.warning(f"🟡 Status: Kelebihan {selisih:.2f} kg. Batasi sampel berkadar gula tinggi.")
-        else:
-            st.info(f"🔵 Status: Kekurangan {abs(selisih):.2f} kg. Tingkatkan kalori sehat.")
-
-    # ==========================================
-    # BAGIAN 3: ANALISIS KOMPARATIF PRODUK
+    # BAGIAN 2: ANALISIS KOMPARATIF PRODUK
     # ==========================================
     with menu_bandingkan:
         st.markdown("## 📊 Perbandingan Vektor Nutrisi Antar Sampel", unsafe_allow_html=True)
@@ -364,6 +340,83 @@ try:
                 st.write(f"• Kandungan natrium **{p1}** lebih rendah sebesar **{abs(sn):.1f} mg** dibandingkan dengan {p2}.")
             else:
                 st.write(f"• Kadar kandungan natrium antara **{p1}** dan **{p2}** adalah setara.")
+
+    # ==========================================
+    # BAGIAN 3: KONTRIBUSI DATA (CROWDSOURCING)
+    # ==========================================
+    with menu_kontribusi:
+        st.markdown("## ➕ Berkontribusi untuk Database Lab", unsafe_allow_html=True)
+        st.markdown("Bantu kami memperluas jangkauan *Snack Patrol* dengan mengirimkan sampel baru yang belum terdaftar di sistem analitik kami.")
+        st.write("---")
+
+        # Menggunakan st.form agar halaman tidak ter-refresh sebelum tombol kirim ditekan
+        with st.form("form_kontribusi", clear_on_submit=True):
+            st.markdown("### 📝 Form Pengajuan Sampel Baru")
+            
+            # Input data tekstual dan numerik
+            nama_baru = st.text_input("Nama Produk Snack / Minuman:", placeholder="Contoh: Taro Net Seaweed")
+            berat_baru = st.number_input("Berat Bersih Kemasan (g / mL):", min_value=1, value=50)
+            
+            st.markdown("### 📸 Lampiran Bukti Kemasan")
+            # Upload area untuk foto kemasan
+            foto_depan = st.file_uploader("Unggah Foto Kemasan Bagian Depan", type=["png", "jpg", "jpeg"])
+            foto_gizi = st.file_uploader("Unggah Foto Tabel Informasi Nilai Gizi (Nutrition Facts)", type=["png", "jpg", "jpeg"])
+            
+            # Tombol submit
+            submit_btn = st.form_submit_button("🚀 Kirim Data Sampel")
+
+            # Logika ketika tombol kirim ditekan
+            if submit_btn:
+                if nama_baru and foto_depan and foto_gizi:
+                    # Membuat direktori penyimpanan lokal (sebagai simulasi database cloud)
+                    upload_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+                    os.makedirs(upload_dir, exist_ok=True)
+                    
+                    # Mengeksekusi penyimpanan file foto ke sistem
+                    with open(os.path.join(upload_dir, f"depan_{foto_depan.name}"), "wb") as f:
+                        f.write(foto_depan.getbuffer())
+                    with open(os.path.join(upload_dir, f"gizi_{foto_gizi.name}"), "wb") as f:
+                        f.write(foto_gizi.getbuffer())
+                        
+                    # Feedback visual ke pengguna
+                    st.success(f"✅ Transmisi Berhasil! Data sampel **{nama_baru}** ({berat_baru} g/mL) telah dikirim ke tim laboratorium Snack Patrol untuk diverifikasi.")
+                    st.balloons() 
+                else:
+                    st.error("⚠️ Proses gagal. Mohon lengkapi nama produk dan lampirkan kedua foto kemasan sebelum mengirimkan data.")
+
+    # ==========================================
+    # BAGIAN 4: KALKULATOR BERAT BADAN
+    # ==========================================
+    with menu_berat:
+        st.markdown("## ⚖️ Kalkulator Berat Badan Ideal (Metode Broca)", unsafe_allow_html=True)
+        st.write("---")
+        c1, c2 = st.columns(2)
+        
+        # Pengumpulan data antropometri praktikan
+        with c1:
+            gender = st.radio("Jenis Kelamin Praktikan:", ["Pria", "Wanita"])
+            tinggi = st.number_input("Tinggi Badan (cm):", min_value=100, max_value=250, value=165, key="tb")
+            
+        with c2:
+            berat_sekarang = st.number_input("Berat Badan Saat Ini (kg):", min_value=30, max_value=200, value=60, key="bb")
+
+        # Logika perhitungan Metode Broca
+        if gender == "Pria":
+            berat_ideal = (tinggi - 100) - ((tinggi - 100) * 0.10)
+        else:
+            berat_ideal = (tinggi - 100) - ((tinggi - 100) * 0.15)
+
+        # Output evaluasi klinis
+        st.markdown("### 📊 Hasil Analisis Klinis")
+        st.metric(label="Berat Badan Ideal Target", value=f"{berat_ideal:.2f} kg")
+        selisih = berat_sekarang - berat_ideal
+
+        if abs(selisih) <= 2:
+            st.success("🟢 Status: Berat badan Anda ideal! Pertahankan pola konsumsi.")
+        elif selisih > 2:
+            st.warning(f"🟡 Status: Kelebihan {selisih:.2f} kg. Batasi sampel berkadar gula tinggi.")
+        else:
+            st.info(f"🔵 Status: Kekurangan {abs(selisih):.2f} kg. Tingkatkan kalori sehat.")
 
 # Penanganan error (*Exception Handling*)
 except FileNotFoundError:
