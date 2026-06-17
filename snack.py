@@ -12,26 +12,27 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* CSS untuk Mengetengahkan dan Memperbesar Tab Navigasi */
-    /* TARGET BARU: Memaksa seluruh area tab pembungkus menjadi ke tengah */
-    div[data-testid="stTabs"] {
+    /* CSS FINAL: Memaksa Tab Navigasi Horizontal Berada Tepat di Tengah */
+    .stTabs {
         display: flex !important;
         flex-direction: column !important;
-        align-items: center !important; /* Memaksa konten tab ke tengah */
+        align-items: center !important; /* Menarik container utama ke tengah */
+        width: 100% !important;
     }
 
-    /* Mengatur jarak dan font tombol menu di dalamnya */
-    div[data-testid="stTabs"] button {
+    .stTabs [data-baseweb="tab-list"] {
+        display: flex !important;
+        justify-content: center !important; /* Memusatkan deretan tombol menu */
+        width: auto !important;
+        gap: 30px !important; /* Jarak aman antar menu */
+    }
+
+    .stTabs [data-baseweb="tab"] {
         font-size: 24px !important; /* Memperbesar ukuran tulisan menu */
-        font-weight: 700 !important; /* Membuat tulisan tebal */
+        font-weight: 700 !important; /* Membuat teks tebal */
+        height: 60px !important; /* Membuat tombol menu lebih proporsional */
         padding-left: 20px !important;
         padding-right: 20px !important;
-        height: 60px !important;
-    }
-    
-    /* Mengatur Font Utama */
-    html, body, [class*="css"]  {
-        font-family: 'Inter', sans-serif;
     }
     
     /* Desain Kartu Produk (Grid Card) */
@@ -366,60 +367,50 @@ try:
             data_p1 = df[df["Nama Produk"] == p1].iloc[0]
             data_p2 = df[df["Nama Produk"] == p2].iloc[0]
 
-            matriks_komparasi = pd.DataFrame({
-                "Parameter Uji": ["Massa Gula (g)", "Massa Natrium (mg)", "Porsi Sampel (g/mL)"],
-                p1: [data_p1["Kandungan Gula (g)"], data_p1["Kandungan Natrium (mg)"], data_p1["Quantity (g or mL)"]],
-                p2: [data_p2["Kandungan Gula (g)"], data_p2["Kandungan Natrium (mg)"], data_p2["Quantity (g or mL)"]]
+            st.markdown("### ⚔️ **Matriks Perbandingan Nutrisi**")
+
+            # 1. Menata data untuk grafik Plotly
+            df_grafik = pd.DataFrame({
+                "Produk": [p1, p1, p2, p2],
+                "Zat Gizi": ["Gula (g)", "Natrium (mg)", "Gula (g)", "Natrium (mg)"],
+                "Nilai Kandungan": [
+                    float(data_p1["Kandungan Gula (g)"]),
+                    float(data_p1["Kandungan Natrium (mg)"]),
+                    float(data_p2["Kandungan Gula (g)"]),
+                    float(data_p2["Kandungan Natrium (mg)"])
+                ]
             })
-            # --- MENGUBAH TABEL MENJADI GRAFIK BATANG INTERAKTIF ---
-            # 1. Tata ulang data gizi agar bisa dibaca oleh grafik Plotly
-            df_grafik = pd.DataFrame(
-                {
-                    "Produk": [p1, p1, p2, p2],
-                    "Zat Gizi": [
-                        "Gula (g)",
-                        "Natrium (mg)",
-                        "Gula (g)",
-                        "Natrium (mg)",
-                    ],
-                    "Nilai Kandungan": [
-                        float(data_p1["Kandungan Gula (g)"]),
-                        float(data_p1["Kandungan Natrium (mg)"]),
-                        float(data_p2["Kandungan Gula (g)"]),
-                        float(data_p2["Kandungan Natrium (mg)"]),
-                    ],
-                }
-            )
 
-            # 2. Buat grafik batang berkelompok dengan warna pastel imut (Pink & Toska)
-            fig = px.bar(
-                df_grafik,
-                x="Zat Gizi",
-                y="Nilai Kandungan",
-                color="Produk",
-                barmode="group",
-                text_auto=True,
-                color_discrete_sequence=["#FF6B8B", "#4FD1C5"],
-            )
+            # 2. Membuat Grafik Batang Interaktif
+            fig = px.bar(df_grafik, x="Zat Gizi", y="Nilai Kandungan", color="Produk", barmode="group",
+                         text_auto=True, color_discrete_sequence=["#FF6B8B", "#4FD1C5"])
 
-            # 3. Hilangkan background abu-abu bawaan plotly agar menyatu dengan tema web
+            # 3. Pengaturan layout grafik aman agar penuh & legenda rapi
             fig.update_layout(
                 plot_bgcolor="rgba(0,0,0,0)",
                 paper_bgcolor="rgba(0,0,0,0)",
-                margin=dict(l=20, r=20, t=25, b=20),
+                margin=dict(l=40, r=40, t=50, b=40),
+                legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="center", x=0.5) # Legenda pas di tengah atas
             )
 
-            # 4. Tampilkan grafik di halaman website
-            st.plotly_chart(fig, use_container_width=True)
+            # 4. Tampilkan grafik LEBAR PENUH & SEMBUNYIKAN TOOLBAR ABU-ABU yang menghalangi
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
-            st.markdown("### 📉 Hasil Evaluasi Selisih Kandungan")
-            sg = data_p1["Kandungan Gula (g)"] - data_p2["Kandungan Gula (g)"]
-            sn = data_p1["Kandungan Natrium (mg)"] - data_p2["Kandungan Natrium (mg)"]
+            # 5. Teks Evaluasi Laboratorium
+            st.markdown("### 📉 **Hasil Evaluasi Selisih Kandungan**")
+            sg = float(data_p1["Kandungan Gula (g)"]) - float(data_p2["Kandungan Gula (g)"])
+            sn = float(data_p1["Kandungan Natrium (mg)"]) - float(data_p2["Kandungan Natrium (mg)"])
 
-            st.write(f"• Gula **{p1}** {'lebih tinggi' if sg>0 else 'lebih rendah' if sg<0 else 'setara'} sebesar **{abs(sg):.1f} g** dibanding {p2}.")
-            st.write(f"• Natrium **{p1}** {'lebih tinggi' if sn>0 else 'lebih rendah' if sn<0 else 'setara'} sebesar **{abs(sn):.1f} mg** dibanding {p2}.")
+            if sg > 0:
+                st.write(f"• Kandungan gula **{p1}** lebih tinggi sebesar **{abs(sg):.1f} g** dibandingkan dengan {p2}.")
+            elif sg < 0:
+                st.write(f"• Kandungan gula **{p1}** lebih rendah sebesar **{abs(sg):.1f} g** dibandingkan dengan {p2}.")
+            else:
+                st.write(f"• Kadar kandungan gula antara **{p1}** and **{p2}** adalah setara.")
 
-except FileNotFoundError:
-    st.error("❌ File 'Database Snack.csv' tidak ditemukan.")
-except Exception as e:
-    st.error(f"❌ Terjadi gangguan sistem: {e}")
+            if sn > 0:
+                st.write(f"• Kandungan natrium **{p1}** lebih tinggi sebesar **{abs(sn):.1f} mg** dibandingkan dengan {p2}.")
+            elif sn < 0:
+                st.write(f"• Kandungan natrium **{p1}** lebih rendah sebesar **{abs(sn):.1f} mg** dibandingkan dengan {p2}.")
+            else:
+                st.write(f"• Kadar kandungan natrium antara **{p1}** and **{p2}** adalah setara.")
