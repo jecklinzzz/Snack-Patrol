@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import streamlit as st
+import plotly.express as px
 
 # 1. Konfigurasi Awal Halaman (Layout Wide)
 st.set_page_config(
@@ -12,17 +13,22 @@ st.markdown(
     """
     <style>
     /* CSS untuk Mengetengahkan dan Memperbesar Tab Navigasi */
-    .stTabs [data-baseweb="tab-list"] {
-        display: flex;
-        justify-content: center; /* Membuat menu ke tengah */
-        gap: 50px; /* Memberi jarak antar tombol menu */
+    /* TARGET BARU: Memaksa seluruh area tab pembungkus menjadi ke tengah */
+    div[data-testid="stTabs"] {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important; /* Memaksa konten tab ke tengah */
     }
 
-    .stTabs [data-baseweb="tab"] {
-        height: 60px; /* Membuat area tombol lebih tinggi */
-        font-size: 22px !important; /* Memperbesar ukuran tulisan menu */
-        font-weight: 700 !important; /* Membuat tulisan menjadi tebal */
+    /* Mengatur jarak dan font tombol menu di dalamnya */
+    div[data-testid="stTabs"] button {
+        font-size: 24px !important; /* Memperbesar ukuran tulisan menu */
+        font-weight: 700 !important; /* Membuat tulisan tebal */
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+        height: 60px !important;
     }
+    
     /* Mengatur Font Utama */
     html, body, [class*="css"]  {
         font-family: 'Inter', sans-serif;
@@ -365,7 +371,46 @@ try:
                 p1: [data_p1["Kandungan Gula (g)"], data_p1["Kandungan Natrium (mg)"], data_p1["Quantity (g or mL)"]],
                 p2: [data_p2["Kandungan Gula (g)"], data_p2["Kandungan Natrium (mg)"], data_p2["Quantity (g or mL)"]]
             })
-            st.table(matriks_komparasi)
+            # --- MENGUBAH TABEL MENJADI GRAFIK BATANG INTERAKTIF ---
+            # 1. Tata ulang data gizi agar bisa dibaca oleh grafik Plotly
+            df_grafik = pd.DataFrame(
+                {
+                    "Produk": [p1, p1, p2, p2],
+                    "Zat Gizi": [
+                        "Gula (g)",
+                        "Natrium (mg)",
+                        "Gula (g)",
+                        "Natrium (mg)",
+                    ],
+                    "Nilai Kandungan": [
+                        float(data_p1["Kandungan Gula (g)"]),
+                        float(data_p1["Kandungan Natrium (mg)"]),
+                        float(data_p2["Kandungan Gula (g)"]),
+                        float(data_p2["Kandungan Natrium (mg)"]),
+                    ],
+                }
+            )
+
+            # 2. Buat grafik batang berkelompok dengan warna pastel imut (Pink & Toska)
+            fig = px.bar(
+                df_grafik,
+                x="Zat Gizi",
+                y="Nilai Kandungan",
+                color="Produk",
+                barmode="group",
+                text_auto=True,
+                color_discrete_sequence=["#FF6B8B", "#4FD1C5"],
+            )
+
+            # 3. Hilangkan background abu-abu bawaan plotly agar menyatu dengan tema web
+            fig.update_layout(
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                margin=dict(l=20, r=20, t=25, b=20),
+            )
+
+            # 4. Tampilkan grafik di halaman website
+            st.plotly_chart(fig, use_container_width=True)
 
             st.markdown("### 📉 Hasil Evaluasi Selisih Kandungan")
             sg = data_p1["Kandungan Gula (g)"] - data_p2["Kandungan Gula (g)"]
