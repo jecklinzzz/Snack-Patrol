@@ -294,7 +294,7 @@ try:
             data_p1 = df[df["Nama Produk"] == p1].iloc[0]
             data_p2 = df[df["Nama Produk"] == p2].iloc[0]
 
-            st.markdown("### ⚔️ **Matriks Perbandingan Nutrisi**")
+            st.markdown("### ⚔️ **Perbandingan Nutrisi**")
 
             # Ekstraksi dataset untuk kebutuhan visualisasi Plotly
             df_grafik = pd.DataFrame({
@@ -423,25 +423,15 @@ try:
         st.markdown("### 🤖 Konsultasi AI Ahli Gizi (Beta)")
         st.info("Ketik kata kunci **'naik'** atau **'turun'** untuk mendapatkan protokol kalori dari asisten AI kami.")
 
-        # Inisialisasi memori chat pada Session State agar chat tidak hilang saat direfresh
-        if "memori_chat" not in st.session_state:
-            st.session_state.memori_chat = []
-
-        # Menampilkan riwayat chat yang tersimpan di memori
-        for chat in st.session_state.memori_chat:
-            with st.chat_message(chat["role"]):
-                st.markdown(chat["content"])
+        # Inisialisasi memori HANYA untuk satu obrolan terakhir (bukan riwayat panjang)
+        if "chat_terakhir" not in st.session_state:
+            st.session_state.chat_terakhir = None
 
         # Kolom input chat untuk pengguna
         input_user = st.chat_input("Tanyakan tips seputar berat badan (contoh: cara turun bb)...")
 
         if input_user:
-            # 1. Simpan dan tampilkan pesan pengguna
-            st.session_state.memori_chat.append({"role": "user", "content": input_user})
-            with st.chat_message("user"):
-                st.markdown(input_user)
-
-            # 2. Logika pemrosesan teks untuk memberikan balasan (Rule-Based)
+            # Logika pemrosesan teks untuk memberikan balasan (Rule-Based)
             teks_lower = input_user.lower()
             if "turun" in teks_lower or "kurus" in teks_lower or "diet" in teks_lower:
                 balasan = """Untuk menurunkan berat badan secara sehat dan presisi, kunci utamanya adalah **Defisit Kalori** (kalori yang masuk lebih sedikit dibandingkan energi yang dibakar). Berikut adalah protokol yang direkomendasikan:
@@ -462,10 +452,15 @@ try:
             else:
                 balasan = "🤖 Maaf, saat ini modul AI Snack Patrol hanya diprogram untuk memberikan rekomendasi seputar **menaikkan** atau **menurunkan** berat badan. Silakan ketik kata kunci 'naik' atau 'turun'."
 
-            # 3. Simpan dan tampilkan balasan sistem AI
-            st.session_state.memori_chat.append({"role": "assistant", "content": balasan})
+            # Simpan hanya interaksi terbaru ke dalam session state untuk menimpa yang lama
+            st.session_state.chat_terakhir = {"user": input_user, "bot": balasan}
+
+        # Tampilkan HANYA obrolan terakhir jika ada isinya
+        if st.session_state.chat_terakhir:
+            with st.chat_message("user"):
+                st.markdown(st.session_state.chat_terakhir["user"])
             with st.chat_message("assistant"):
-                st.markdown(balasan)
+                st.markdown(st.session_state.chat_terakhir["bot"])
 
 # Penanganan error (*Exception Handling*)
 except FileNotFoundError:
