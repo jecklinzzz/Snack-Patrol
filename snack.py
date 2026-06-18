@@ -392,9 +392,9 @@ try:
         st.write("---")
         c1, c2 = st.columns(2)
         
-        # Pengumpulan data antropometri praktikan
+        # Pengumpulan data antropometri
         with c1:
-            gender = st.radio("Jenis Kelamin Praktikan:", ["Pria", "Wanita"])
+            gender = st.radio("Jenis Kelamin:", ["Pria", "Wanita"])
             tinggi = st.number_input("Tinggi Badan (cm):", min_value=100, max_value=250, value=165, key="tb")
             
         with c2:
